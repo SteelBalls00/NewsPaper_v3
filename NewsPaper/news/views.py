@@ -2,11 +2,16 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy, resolve
+from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import TemplateView
 from django.core.mail import EmailMultiAlternatives
 # from django import settings
+from django.http.response import HttpResponse
+
+
+from django.utils.translation import gettext as _
 
 from .forms import PostForm
 from .models import Post, Category
@@ -199,3 +204,16 @@ class CategoryListView(ListView):
         return context
 
 
+# class Index(View):
+#     def get(self, request):
+#         string = _('Hello world')
+#
+#         return HttpResponse(string)
+
+class Index(View):
+    def get(self, request):
+        models = Post.objects.all()
+        context = {
+            'models': models
+        }
+        return HttpResponse(render(request, 'default.html', context))

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load i18n %}
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -12,11 +13,42 @@
 
 		{% load static %}
         <!-- Favicon-->
+
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- CSS -->
         <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     </head>
     <body>
+
+        <form action="{% url 'set_language' %}" method="POST">
+       {% csrf_token %}
+        <input type="hidden" name="next" value="{{ redirect_to }}">
+
+        <select name="language" id="language">
+            <option value="none" hidden="">{% trans "Русский" %}</option>
+            {% get_available_languages as LANGUAGES %}
+            {% get_language_info_list for LANGUAGES as languages %}
+            {% for language in languages %}
+                     <option value="{{ language.code }}"
+                    {% if language.code == LANGUAGE_CODE %} selected {% endif %}>
+                    {{ language.name_local }} - {{ language.code }}
+                    </option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="set">
+        </form>
+        {% for model in models %}
+            <div class="post">
+                <h2>{% trans "Заголовок" %}: {{ model.title }}</h2>
+                <p>{% trans "Автор" %}: {{ model.author }}</p>
+                <p>{% trans "Вид поста" %}: {{ model.get_post_type_display }}</p>
+                <p>{% trans "Дата создания" %}: {{ model.time_create }}</p>
+                <p>{% trans "Дата изменения" %}: {{ model.time_update }}</p>
+                <p>{% trans "Категории" %}: {{ model.categories.all }}</p>
+                <p>{% trans "Контент" %}: {{ model.content }}</p>
+                <p>{% trans "Рейтинг" %}: {{ model.rating }}</p>
+            </div>
+        {% endfor %}
         <!-- Page content-->
             <div class="container">
                <div class="row">
