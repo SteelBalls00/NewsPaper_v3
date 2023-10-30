@@ -11,7 +11,7 @@
 
    <form action="" method="get">
        {{ filterset.form.as_p }}
-       <input type="submit" value="{% trans 'Найти' %}" />
+       <input type="submit" value='Найти' />
    </form>
 
 <hr>
@@ -25,7 +25,7 @@
         </tr>
         {% for news in search_news %}
         <tr>
-            <td>{{ news.title|censor:news.title }}</td>
+            <td> <a href="http://127.0.0.1:8000/news/{{ news.pk }}"> {{ news.title|censor:news.title }}</a></td>
             <td>{{ news.time_create|date:'d.m.Y' }}</td>
             <td>{{ news.content|truncatechars:20|censor:news.content }}</td>
         </tr>

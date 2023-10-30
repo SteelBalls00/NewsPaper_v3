@@ -8,9 +8,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.views.generic import TemplateView
 from django.core.mail import EmailMultiAlternatives
 # from django import settings
+
 from django.http.response import HttpResponse
+from django.utils import timezone
+import pytz
 
-
+# from django.utils.translation import activate, get_supported_language_variant, LANGUAGE_SESSION_KEY
 from django.utils.translation import gettext as _
 
 from .forms import PostForm
@@ -44,7 +47,14 @@ class NewsList(ListView):
         # Добавляем в контекст объект фильтрации.
         context['filterset'] = self.filterset
         # context['category'] = self.category
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
+
         return context
+
+    def post(self, request):
+        request.session['django_timezone'] = request.POST['timezone']
+        return redirect('post_list')
 
 
 
@@ -53,6 +63,17 @@ class NewsDetail(DetailView):
     model = Post
     template_name = 'one_news.html'
     context_object_name = 'one_news'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
+
+        return context
+
+    # def post(self, request):
+    #     request.session['django_timezone'] = request.POST['timezone']
+    #     return redirect('post_detail')
 
 
 class PostCreate(PermissionRequiredMixin, CreateView):
@@ -74,6 +95,12 @@ class PostCreate(PermissionRequiredMixin, CreateView):
         post.save()
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
+
+
 
 class PostUpdate(PermissionRequiredMixin, UpdateView):
     permission_required = ('news.change_post')
@@ -82,12 +109,24 @@ class PostUpdate(PermissionRequiredMixin, UpdateView):
     template_name = 'edit_news.html'
     # success_url = reverse_lazy('post_list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
+
+
 
 class PostDelete(PermissionRequiredMixin, DeleteView):
     permission_required = ('news.delete_post')
     model = Post
     template_name = 'delete_news.html'
     success_url = reverse_lazy('post_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
+
 
 
 class PostSearch(ListView):
@@ -113,7 +152,10 @@ class PostSearch(ListView):
         context = super().get_context_data(**kwargs)
         # Добавляем в контекст объект фильтрации.
         context['filterset'] = self.filterset
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
         return context
+
 
 
 class PostCategoryView(ListView):
@@ -201,19 +243,9 @@ class CategoryListView(ListView):
         # context['is not subscriber'] = not self.category.subscribers.filter(id=self.request.user.id).exists()
         context['is_not_subscriber'] = self.request.user not in self.category.subscribers.all()
         context['category'] = self.category
+        context['current_time'] = timezone.now()
+        context['timezones'] = pytz.common_timezones
+
         return context
 
 
-# class Index(View):
-#     def get(self, request):
-#         string = _('Hello world')
-#
-#         return HttpResponse(string)
-
-class Index(View):
-    def get(self, request):
-        models = Post.objects.all()
-        context = {
-            'models': models
-        }
-        return HttpResponse(render(request, 'default.html', context))
